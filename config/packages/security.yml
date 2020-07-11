@@ -1,0 +1,22 @@
+security:
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER
+    encoders:
+        Symfony\Component\Security\Core\User\User: plaintext
+    providers:
+        in_memory:
+            memory:
+                users:
+                    note:
+                        password: note
+                        roles: 'ROLE_USER'
+                    admin:
+                        password: admin
+                        roles: 'ROLE_ADMIN'
+    firewalls:
+        main:
+            http_basic:
+                realm: Secured Area
+    access_control:
+        - { path: ^/user, roles: ROLE_ADMIN }
+        - { path: ^/note, roles: ROLE_USER }
