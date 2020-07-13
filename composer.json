@@ -11,11 +11,13 @@
         "symfony/validator": "4.4.*",
         "symfony/security-bundle": "4.4.*",
         "doctrine/doctrine-bundle": "*",
-        "symfony/yaml": "4.4.*"
+        "symfony/yaml": "4.4.*",
+        "ext-json": "*"
     },
     "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "*",
         "doctrine/doctrine-migrations-bundle": "*",
-        "doctrine/doctrine-fixtures-bundle": "*"
+        "jdorn/sql-formatter": "*"
     },
     "config": {
         "optimize-autoloader": true,

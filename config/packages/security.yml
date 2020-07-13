@@ -18,5 +18,5 @@ security:
             http_basic:
                 realm: Secured Area
     access_control:
-        - { path: ^/user, roles: ROLE_ADMIN }
-        - { path: ^/note, roles: ROLE_USER }
+        - { path: ^/users, roles: ROLE_ADMIN, methods: [GET, POST, PUT, DELETE]}
+        - { path: ^/notes, roles: ROLE_USER, methods: [GET, POST, PUT, DELETE]}
