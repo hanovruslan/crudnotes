@@ -3,6 +3,7 @@ framework:
         enabled: true
     serializer:
         enabled: true
+        circular_reference_handler: App\Utils\CircularReferenceHandler
     validation:
         enabled: true
     secret: '%env(APP_SECRET)%'
