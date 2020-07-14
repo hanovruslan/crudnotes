@@ -74,6 +74,10 @@ curl --header "Content-Type: application/json" \
     --data '{"title":"title","body":"body","username":"username"}' \
     http://note:note@127.0.0.1:8000/notes
 ```
+#### read note #### 
+```bash
+curl -X "GET" http://note:note@127.0.0.1:8000/notes/200
+```
 #### update note #### 
 ```bash
 curl --header "Content-Type: application/json" \
