@@ -48,6 +48,18 @@ class UsersService extends AbstractService
     }
 
     /**
+     * @param string $username
+     * @return User|object|null
+     */
+    public function readByUsername(?string $username = null) : ?User {
+        if (null === $username) {
+            throw new \RuntimeException('empty username');
+        }
+
+        return $this->getRepository() ->findOneBy(['username' => $username]);
+    }
+
+    /**
      * @param int $id
      * @param string|null $fullname
      */

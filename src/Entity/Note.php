@@ -35,7 +35,7 @@ class Note
 
     /**
      * @var User|null
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="notes", nullable=false)
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="notes")
      */
     protected $user;
 

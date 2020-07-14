@@ -30,7 +30,7 @@ class UsersFixtures extends Fixture implements OrderedFixtureInterface
         ];
         $minSeconds = 2*24*60*60;
         $maxSeconds = 5*24*60*60;
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 1; $i <= 20; $i++) {
             $user = (new User())
                 ->setUsername('username_' . $i)
                 ->setFullname($names[mt_rand(0, count($names) - 1)])
