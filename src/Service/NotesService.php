@@ -4,22 +4,9 @@ namespace App\Service;
 
 use App\Entity\Note;
 use App\Entity\User;
-use App\Repository\UsersRepository;
-use Doctrine\Persistence\ManagerRegistry;
 
 class NotesService extends AbstractService
 {
-    /**
-     * @var UsersRepository|null
-     */
-    protected $usersRepository;
-
-    public function __construct(ManagerRegistry $managerRegistry, UsersRepository $usersRepository)
-    {
-        parent::__construct($managerRegistry);
-        $this->usersRepository = $usersRepository;
-    }
-
     function getClassName(): string
     {
         return Note::class;
@@ -35,16 +22,14 @@ class NotesService extends AbstractService
     /**
      * @param string|null $title
      * @param string|null $body
-     * @param string|null $username
+     * @param User|null $user
      * @return Note
      */
-    public function create(?string $title = null, ?string $body = null, ?string $username = null) : Note {
+    public function create(?string $title = null, ?string $body = null, ?User $user = null) : Note {
         if (null === $title) {
             throw new \RuntimeException('empty title');
-        } else if (null === $username) {
-            throw new \RuntimeException('empty username');
-        } elseif (!(($user = $this->usersRepository->findOneBy(['username' => $username])) instanceof User)) {
-            throw new \RuntimeException('unknown username: ' . $username);
+        } elseif (!($user instanceof User)) {
+            throw new \RuntimeException('empty user');
         } else {
             $note = (new Note())
                 ->setTitle($title)
@@ -65,26 +50,20 @@ class NotesService extends AbstractService
         return $this->getRepository() ->find($id);
     }
 
-    public function readWithUsername(int $id, string $username) : ?Note {
-        /**
-         * @var Note $note
-         */
-        $note = $this->getRepository() ->find($id);
-        if ($note->getUser()->getUsername() !== $username) {
-            throw new \RuntimeException('unable to read note by id: ' . $id);
-        }
-
-        return $note;
-    }
-
     /**
      * @param int $id
      * @param string $title
      * @param string|null $body
-     * @param string $username
+     * @param User|null $user
      */
-    public function update(int $id, string $title, ?string $body = null, ?string $username = null) : void {
-        $note = $this->readWithUsername($id, $username);
+    public function update(int $id, string $title, ?string $body = null, ?User $user = null) : void {
+        if (!($user instanceof User)) {
+            throw new \RuntimeException('empty user');
+        }
+        $note = $this->getRepository() ->find($id);
+        if ($note->getUser()->getUsername() !== $user->getUsername()) {
+            throw new \RuntimeException('unable to update note by id: ' . $id);
+        }
         if ($note instanceof Note) {
             $note->setTitle($title);
             $note->setBody($body);
@@ -96,11 +75,18 @@ class NotesService extends AbstractService
 
     /**
      * @param int $id
+     * @param User|null $user
      * @return void
      */
-    public function deleteWithUsername(int $id, string $username) : void {
-        $note = $this->readWithUsername($id, $username);
+    public function delete(int $id, ?User $user) : void {
+        if (!($user instanceof User)) {
+            throw new \RuntimeException('empty user');
+        }
+        $note = $this->getRepository() ->find($id);
         if ($note instanceof Note) {
+            if ($note->getUser()->getUsername() !== $user->getUsername()) {
+                throw new \RuntimeException('unable to delete note by id: ' . $id);
+            }
             $this->remove($note);
         }
     }

@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Note;
+use App\Entity\User;
 use App\Service\NotesService;
+use App\Service\UsersService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -33,17 +35,18 @@ class NotesController extends AbstractController
     /**
      * @Route("/notes", methods={"POST"})
      * @param NotesService $noteService
+     * @param UsersService $usersService
      * @param Request $request
      * @return RedirectResponse
      */
-    public function create(NotesService $noteService, Request $request) : RedirectResponse
+    public function create(NotesService $noteService, UsersService $usersService, Request $request) : RedirectResponse
     {
         try {
             $data = $this->getData($request);
             $note = $noteService->create(
-                $data['username'] ?? null,
                 $data['title'] ?? null,
-                $data['body'] ?? null
+                $data['body'] ?? null,
+                $usersService->readByUsername($data['username'] ?? null)
             );
             return $this->redirectToRoute('note_read', [
                 'id' => $note->getId(),
@@ -74,18 +77,20 @@ class NotesController extends AbstractController
     /**
      * @Route("/notes/{id}", methods={"PUT"})
      * @param NotesService $noteService
+     * @param UsersService $usersService
      * @param int $id
      * @param Request $request
      * @return RedirectResponse
      */
-    public function update(NotesService $noteService, int $id, Request $request) : RedirectResponse
+    public function update(NotesService $noteService, UsersService $usersService, int $id, Request $request) : RedirectResponse
     {
         try {
             $data = \json_decode($request->getContent(), true);
-            $noteService->update($id,
-                $data['username'] ?? null,
+            $noteService->update(
+                $id,
                 $data['title'] ?? null,
-                $data['body'] ?? null
+                $data['body'] ?? null,
+                $usersService->readByUsername($data['username'] ?? null)
             );
 
             return $this->redirectToRoute('note_read', [
@@ -97,16 +102,25 @@ class NotesController extends AbstractController
     }
 
     /**
-     * @Route("/notes/{username}/{id}", methods={"DELETE"})
+     * @Route("/notes/{id}", methods={"DELETE"})
      * @param NotesService $noteService
-     * @param string $username
+     * @param UsersService $usersService
      * @param int $id
+     * @param Request $request
      * @return JsonResponse
      */
-    public function delete(NotesService $noteService, string $username, int $id)
+    public function delete(NotesService $noteService, UsersService $usersService, int $id, Request $request)
     {
-        $noteService->deleteWithUsername($id, $username);
+        try {
+            $data = \json_decode($request->getContent(), true);
+            $noteService->delete(
+                $id,
+                $usersService->readByUsername($data['username'] ?? null)
+            );
 
-        return $this->json([]);
+            return $this->json([]);
+        } catch (\Throwable $exception) {
+            throw new BadRequestHttpException($exception->getMessage());
+        }
     }
 }
