@@ -81,7 +81,7 @@ curl --header "Content-Type: application/json" \
     --data '{"title":"Foo Bar","username":"username","body":"Eu non diam phasellus vestibulum lorem sed risus ultricies tristiqu"}' \
     http://note:note@127.0.0.1:8000/notes/201
 ```
-#### delete user #### 
+#### delete note #### 
 ```bash
 curl -X "DELETE" \
     --data '{"username":"username"}' \
