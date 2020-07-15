@@ -4,7 +4,14 @@ namespace App\Service;
 
 use App\Entity\Note;
 use App\Entity\User;
+use App\Repository\NotesRepository;
+use DateTime;
+use DateTimeImmutable;
+use RuntimeException;
 
+/**
+ * @method NotesRepository getRepository()
+ */
 class NotesService extends AbstractService
 {
     function getClassName(): string
@@ -20,22 +27,42 @@ class NotesService extends AbstractService
     }
 
     /**
+     * @param User $user
+     * @return array|Note[]
+     */
+    public function listByUser(User $user) : array {
+        return $this->getRepository()->findBy([
+            'user' => $user,
+        ], ['updatedAt' => 'DESC']);
+    }
+
+    /**
+     * @param User $user
+     * @return array|Note[]
+     */
+    public function listBySharedUser(User $user) : array {
+        return $this->getRepository()->findBySharedUser($user);
+    }
+
+    /**
      * @param string|null $title
      * @param string|null $body
-     * @param User|null $user
+     * @param User|null $author
      * @return Note
      */
-    public function create(?string $title = null, ?string $body = null, ?User $user = null) : Note {
+    public function create(?string $title = null, ?string $body = null, ?User $author = null) : Note {
         if (null === $title) {
-            throw new \RuntimeException('empty title');
-        } elseif (!($user instanceof User)) {
-            throw new \RuntimeException('empty user');
+            throw new RuntimeException('empty title');
+        } elseif (!($author instanceof User)) {
+            throw new RuntimeException('empty user');
         } else {
             $note = (new Note())
                 ->setTitle($title)
                 ->setBody($body)
-                ->setUser($user)
-                ->setCreatedAt(new \DateTimeImmutable());
+                ->setUser($author)
+                ->setCreatedAt(new DateTimeImmutable())
+                ->setUpdatedAt(new DateTime())
+            ;
             $this->persist($note);
 
             return $note;
@@ -44,50 +71,43 @@ class NotesService extends AbstractService
 
     /**
      * @param int $id
+     * @param User $author
      * @return Note|object|null
      */
-    public function read(int $id) : ?Note {
-        return $this->getRepository() ->find($id);
+    public function findOneBy(int $id, User $author) : ?Note {
+        return $this->getRepository() ->findOneBy([
+            'id' => $id,
+            'user' => $author,
+        ]);
     }
 
     /**
-     * @param int $id
+     * @param Note $note
      * @param string $title
      * @param string|null $body
-     * @param User|null $user
      */
-    public function update(int $id, string $title, ?string $body = null, ?User $user = null) : void {
-        if (!($user instanceof User)) {
-            throw new \RuntimeException('empty user');
-        }
-        $note = $this->getRepository() ->find($id);
-        if ($note->getUser()->getUsername() !== $user->getUsername()) {
-            throw new \RuntimeException('unable to update note by id: ' . $id);
-        }
-        if ($note instanceof Note) {
-            $note->setTitle($title);
-            $note->setBody($body);
-            $this->persist($note);
-        } else {
-            throw new \RuntimeException('note not found by id: ' . $id);
-        }
+    public function update(Note $note, string $title, ?string $body = null) : void {
+        $note
+            ->setTitle($title)
+            ->setBody($body)
+            ->setUpdatedAt(new DateTime())
+        ;
+        $this->persist($note);
     }
 
     /**
-     * @param int $id
-     * @param User|null $user
+     * @param Note $note
      * @return void
      */
-    public function delete(int $id, ?User $user) : void {
-        if (!($user instanceof User)) {
-            throw new \RuntimeException('empty user');
-        }
-        $note = $this->getRepository() ->find($id);
-        if ($note instanceof Note) {
-            if ($note->getUser()->getUsername() !== $user->getUsername()) {
-                throw new \RuntimeException('unable to delete note by id: ' . $id);
-            }
-            $this->remove($note);
-        }
+    public function delete(Note $note) : void {
+        $this->remove($note);
+    }
+
+    public function share(int $id, User $user, ?User $author) : void {
+
+    }
+
+    public function deshare(int $id, User $user, ?User $author) : void {
+
     }
 }

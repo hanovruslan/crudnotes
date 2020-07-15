@@ -2,7 +2,11 @@
 
 namespace App\Entity;
 
+use DateTime;
+use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\NotesRepository")
@@ -22,10 +26,16 @@ class Note
     protected $title;
 
     /**
-     * @var \DateTimeImmutable|null
+     * @var DateTimeImmutable|null
      * @ORM\Column(type="datetime_immutable")
      */
     protected $createdAt;
+
+    /**
+     * @var DateTime|null
+     * @ORM\Column(type="datetime")
+     */
+    protected $updatedAt;
 
     /**
      * @var string|null
@@ -36,8 +46,68 @@ class Note
     /**
      * @var User|null
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="notes")
+     * @Ignore
      */
     protected $user;
+
+    /**
+     * @var Note[]|ArrayCollection|array
+     * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="note")
+     * @Ignore
+     */
+    protected $shares;
+
+    public function __construct()
+    {
+        $this->shares = new ArrayCollection();
+    }
+
+    /**
+     * @return ArrayCollection|Share[]|array
+     */
+    public function getShares()
+    {
+        return $this->shares;
+    }
+
+    /**
+     * @param Share[]|array $shares
+     * @return static
+     */
+    public function setShares($shares)
+    {
+        foreach ($shares as $share) {
+            $this->addShare($share);
+        }
+        return $this;
+    }
+
+    /**
+     * @param Share $share
+     * @return static
+     */
+    public function addShare(Share $share) {
+        if (!$this->shares->contains($share)) {
+            $this->shares->add($share);
+            $share->setNote($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Share $share
+     * @return static
+     */
+    public function removeShare(Share $share)
+    {
+        if ($this->shares->contains($share)) {
+            $share->setNote(null);
+            $this->shares->removeElement($share);
+        }
+
+        return $this;
+    }
 
     /**
      * @return User|null
@@ -93,20 +163,39 @@ class Note
     }
 
     /**
-     * @return \DateTimeImmutable|null
+     * @return DateTimeImmutable|null
      */
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
     /**
-     * @param \DateTimeImmutable|null $createdAt
+     * @param DateTimeImmutable|null $createdAt
      * @return static
      */
-    public function setCreatedAt(?\DateTimeImmutable $createdAt = null)
+    public function setCreatedAt(?DateTimeImmutable $createdAt = null)
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+    
+    /**
+     * @return DateTime|null
+     */
+    public function getUpdatedAt(): ?DateTime
+    {
+        return $this->updatedAt;
+    }
+
+    /**
+     * @param DateTime|null $updatedAt
+     * @return static
+     */
+    public function setUpdatedAt(?DateTime $updatedAt = null)
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
