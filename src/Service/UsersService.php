@@ -3,7 +3,11 @@
 namespace App\Service;
 
 use App\Entity\User;
+use App\Repository\UsersRepository;
 
+/**
+ * @method UsersRepository getRepository()
+ */
 class UsersService extends AbstractService
 {
     function getClassName(): string
@@ -51,12 +55,25 @@ class UsersService extends AbstractService
      * @param string $username
      * @return User|object|null
      */
-    public function readByUsername(?string $username = null) : ?User {
+    public function findOneByUsername(?string $username = null) : ?User {
         if (null === $username) {
             throw new \RuntimeException('empty username');
         }
 
         return $this->getRepository() ->findOneBy(['username' => $username]);
+    }
+
+    /**
+     * @param string[] $usernames
+     * @return User[]
+     */
+    public function findByUsernames(?array $usernames = []) : array {
+        return array_map(function (string $username) {
+            $user = $this->findOneByUsername($username);
+            if (!($user instanceof User)) {
+                throw new \RuntimeException('user not found by username' . $username);
+            }
+        }, $usernames);
     }
 
     /**

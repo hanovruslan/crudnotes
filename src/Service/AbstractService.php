@@ -17,7 +17,7 @@ abstract class AbstractService
         $this->managerRegistry = $managerRegistry;
     }
 
-    abstract function getClassName() : string;
+    abstract protected function getClassName() : string;
 
     protected function getRepository() : ObjectRepository
     {

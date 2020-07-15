@@ -38,6 +38,11 @@ export NAME=crudnotes && mysql \
 && ./bin/console doctrine:migrations:migrate -n \
 && ./bin/console doctrine:fixtures:load -n
 ```
+### create migration ###
+
+```bash
+./bin/console doctrine:migrations:diff --allow-empty-diff --line-length=120 --formatted -n
+```
 
 ## api helpers ##
 
@@ -66,6 +71,13 @@ curl --header "Content-Type: application/json" \
 curl -X "DELETE" http://admin:admin@127.0.0.1:8000/users/21
 ```
 ### notes ###
+
+#### list notes ####
+
+```bash
+curl -X "GET" http://note:note@127.0.0.1:8000/notes \
+    --data '{"username":"username_1"}'
+```
 
 #### create note ####
 ```

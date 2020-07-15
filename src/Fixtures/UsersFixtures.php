@@ -31,12 +31,14 @@ class UsersFixtures extends Fixture implements OrderedFixtureInterface
         $minSeconds = 2*24*60*60;
         $maxSeconds = 5*24*60*60;
         for ($i = 1; $i <= 20; $i++) {
-            $user = (new User())
+            $fixture = (new User())
                 ->setUsername('username_' . $i)
                 ->setFullname($names[mt_rand(0, count($names) - 1)])
-                ->setCreatedAt(new \DateTimeImmutable('- ' . mt_rand($minSeconds, $maxSeconds) . ' seconds'));
-            $manager->persist($user);
-            $this->setReference('user_' . $i, $user);
+                ->setCreatedAt(new \DateTimeImmutable('- ' . mt_rand($minSeconds, $maxSeconds) . ' seconds'))
+                ->setUpdatedAt(new \DateTime('- ' . mt_rand(0, $minSeconds) . ' seconds'))
+            ;
+            $manager->persist($fixture);
+            $this->setReference('user_' . $i, $fixture);
         }
 
         $manager->flush();
