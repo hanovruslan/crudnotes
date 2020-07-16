@@ -3,9 +3,12 @@
 namespace App\Fixtures;
 
 use App\Entity\User;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Exception;
 
 class UsersFixtures extends Fixture implements OrderedFixtureInterface
 {
@@ -14,6 +17,10 @@ class UsersFixtures extends Fixture implements OrderedFixtureInterface
         return 0;
     }
 
+    /**
+     * @param ObjectManager $manager
+     * @throws Exception
+     */
     public function load(ObjectManager $manager)
     {
         $names = [
@@ -34,8 +41,8 @@ class UsersFixtures extends Fixture implements OrderedFixtureInterface
             $fixture = (new User())
                 ->setUsername('username_' . $i)
                 ->setFullname($names[mt_rand(0, count($names) - 1)])
-                ->setCreatedAt(new \DateTimeImmutable('- ' . mt_rand($minSeconds, $maxSeconds) . ' seconds'))
-                ->setUpdatedAt(new \DateTime('- ' . mt_rand(0, $minSeconds) . ' seconds'))
+                ->setCreatedAt(new DateTimeImmutable('- ' . mt_rand($minSeconds, $maxSeconds) . ' seconds'))
+                ->setUpdatedAt(new DateTime('- ' . mt_rand(1, $minSeconds) . ' seconds'))
             ;
             $manager->persist($fixture);
             $this->setReference('user_' . $i, $fixture);

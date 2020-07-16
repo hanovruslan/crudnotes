@@ -31,18 +31,24 @@ abstract class AbstractService
 
     /**
      * @param mixed $object
+     * @param bool $andFlush
      * @return void
      */
-    protected function remove($object) : void {
+    protected function remove($object, bool $andFlush = true) : void {
         $this->getManager()->remove($object);
-        $this->getManager()->flush();
+        if ($andFlush) {
+            $this->getManager()->flush();
+        }
     }
 
     /**
      * @param mixed $object
+     * @param bool $andFlush
      */
-    public function persist($object) : void {
+    public function persist($object, bool $andFlush = true) : void {
         $this->getManager()->persist($object);
-        $this->getManager()->flush();
+        if ($andFlush) {
+            $this->getManager()->flush();
+        }
     }
 }

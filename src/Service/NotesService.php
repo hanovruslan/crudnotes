@@ -3,10 +3,12 @@
 namespace App\Service;
 
 use App\Entity\Note;
+use App\Entity\Share;
 use App\Entity\User;
 use App\Repository\NotesRepository;
 use DateTime;
 use DateTimeImmutable;
+use Doctrine\ORM\NonUniqueResultException;
 use RuntimeException;
 
 /**
@@ -30,7 +32,7 @@ class NotesService extends AbstractService
      * @param User $user
      * @return array|Note[]
      */
-    public function listByUser(User $user) : array {
+    public function findByUser(User $user) : array {
         return $this->getRepository()->findBy([
             'user' => $user,
         ], ['updatedAt' => 'DESC']);
@@ -74,7 +76,7 @@ class NotesService extends AbstractService
      * @param User $author
      * @return Note|object|null
      */
-    public function findOneBy(int $id, User $author) : ?Note {
+    public function findOneBy(User $author, int $id) : ?Note {
         return $this->getRepository() ->findOneBy([
             'id' => $id,
             'user' => $author,
@@ -92,6 +94,7 @@ class NotesService extends AbstractService
             ->setBody($body)
             ->setUpdatedAt(new DateTime())
         ;
+
         $this->persist($note);
     }
 
@@ -103,11 +106,23 @@ class NotesService extends AbstractService
         $this->remove($note);
     }
 
-    public function share(int $id, User $user, ?User $author) : void {
-
+    /**
+     * @param User $user
+     * @param string|null $access
+     * @return Note[]
+     */
+    public function findAvailableBy(User $user, ?string $access = 'read') {
+        return $this->getRepository()->findByUserAndAccess($user, $access);
     }
 
-    public function deshare(int $id, User $user, ?User $author) : void {
-
+    /**
+     * @param User $user
+     * @param string $access
+     * @param int $id
+     * @return Note|null
+     * @throws NonUniqueResultException
+     */
+    public function findOneAvailableBy(User $user, string $access, int $id) {
+        return $this->getRepository()->findOneByUserAndAccessAndId($user, $access, $id);
     }
 }
