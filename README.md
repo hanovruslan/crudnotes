@@ -1,9 +1,6 @@
 # crud notes #
-
 ## mysql/docker helpers ##
-
 ### create ###
-
 ```bash
 ( \
 export NAME=crudnotes && docker run \
@@ -31,75 +28,92 @@ export NAME=crudnotes && mysql \
     --password=${NAME} \
 )
 ```
-### recreate db and load fixtures ###
+### recreate database and load fixtures ###
 ```bash
-./bin/console doctrine:database:drop --if-exists -f \
-&& ./bin/console doctrine:database:create --if-not-exists \
-&& ./bin/console doctrine:migrations:migrate -n \
-&& ./bin/console doctrine:fixtures:load -n
+bin/console doctrine:database:drop --if-exists -f \
+&& bin/console doctrine:database:create --if-not-exists \
+&& bin/console doctrine:migrations:migrate -n \
+&& bin/console doctrine:fixtures:load -n
 ```
 ### create migration ###
-
 ```bash
-./bin/console doctrine:migrations:diff --allow-empty-diff --line-length=120 --formatted -n
+bin/console doctrine:migrations:diff --allow-empty-diff --line-length=120 --formatted -n
 ```
-
 ## api helpers ##
-
 ### users ###
-
 #### create user #### 
 ```bash
-curl --header "Content-Type: application/json" \
-    --request POST \
+curl http://admin:admin@127.0.0.1:8000/users \
+    --header "Content-Type: application/json" \
     --data '{"username":"username","fullname":"fullname"}' \
-    http://admin:admin@127.0.0.1:8000/users
+    --request POST
 ```
 #### read user #### 
 ```bash
-curl -X "GET" http://admin:admin@127.0.0.1:8000/users/21
+curl http://admin:admin@127.0.0.1:8000/users/21 \
+    --request GET
 ```
 #### update user #### 
 ```bash
-curl --header "Content-Type: application/json" \
-    --request PUT \
+curl http://admin:admin@127.0.0.1:8000/users/21 \
+    --header "Content-Type: application/json" \
     --data '{"fullname":"James Bond"}' \
-    http://admin:admin@127.0.0.1:8000/users/21
+    --request PUT
 ```
 #### delete user #### 
 ```bash
-curl -X "DELETE" http://admin:admin@127.0.0.1:8000/users/21
+curl http://admin:admin@127.0.0.1:8000/users/21 \
+    --request DELETE
 ```
 ### notes ###
-
-#### list notes ####
-
-```bash
-curl -X "GET" http://note:note@127.0.0.1:8000/notes \
-    --data '{"username":"username_1"}'
-```
-
 #### create note ####
-```
-curl --header "Content-Type: application/json" \
-    --request POST \
-    --data '{"title":"title","body":"body","username":"username"}' \
-    http://note:note@127.0.0.1:8000/notes
+```bash
+curl http://note:note@127.0.0.1:8000/notes \
+    --header "Content-Type: application/json" \
+    --data '{"i_am":"username","title":"title","body":"body"}' \
+    --request POST
 ```
 #### read note #### 
 ```bash
-curl -X "GET" http://note:note@127.0.0.1:8000/notes/200
+curl http://note:note@127.0.0.1:8000/notes/21 \
+    --data '{"i_am":"username"}' \
+    --request GET
 ```
 #### update note #### 
 ```bash
-curl --header "Content-Type: application/json" \
-    --request PUT \
-    --data '{"title":"Foo Bar","username":"username","body":"Eu non diam phasellus vestibulum lorem sed risus ultricies tristiqu"}' \
-    http://note:note@127.0.0.1:8000/notes/201
+curl http://note:note@127.0.0.1:8000/notes/1 \
+    --header "Content-Type: application/json" \
+    --data '{"i_am":"username_1","title":"Foo Bar","body":"Eu non diam phasellus vestibulum lorem sed risus ultricies tristiqu"}' \
+    --request PUT
+# or by share write access
+curl http://note:note@127.0.0.1:8000/notes/1 \
+    --header "Content-Type: application/json" \
+    --data '{"i_am":"username_12","title":"Foobar","body":"The etymology of foobar is generally traced to the World War II military slang FUBAR"}' \
+    --request PUT
 ```
 #### delete note #### 
 ```bash
-curl -X "DELETE" \
-    --data '{"username":"username"}' \
-    http://note:note@127.0.0.1:8000/notes/201
+curl http://note:note@127.0.0.1:8000/notes/21 \
+    --data '{"i_am":"username"}' \
+    --request DELETE
+```
+#### list notes ####
+```bash
+curl http://note:note@127.0.0.1:8000/notes \
+    --data '{"i_am":"username_1"}' \
+    --request GET
+```
+#### share note ####
+```bash
+curl http://note:note@127.0.0.1:8000/notes/1/share \
+    --header "Content-Type: application/json" \
+    --data '{"i_am":"username_1","access"=>"read","usernames":["username_3","username_4"]}' \
+    --request PUT
+```
+#### deshare note ####
+```bash
+curl http://note:note@127.0.0.1:8000/notes/1/share \
+    --header "Content-Type: application/json" \
+    --data '{"i_am":"username_1","access"=>"read","usernames":["username_3","username_4"]}' \
+    --request DELETE
 ```

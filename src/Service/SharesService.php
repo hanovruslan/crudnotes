@@ -6,7 +6,6 @@ use App\Entity\Note;
 use App\Entity\Share;
 use App\Entity\User;
 use App\Repository\SharesRepository;
-use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method SharesRepository getRepository()
@@ -26,56 +25,51 @@ class SharesService extends AbstractService
     }
 
     /**
-     * @param User $user
-     * @param string|null $access
-     * @return Share[]
+     * @param Note $note
+     * @param string $access
+     * @param User[] $users
      */
-    public function findByUserAndAccess(User $user, ?string $access = 'read') {
-        /**
-         * @var QueryBuilder $qb
-         */
-        $qb = $this->getManager()->createQueryBuilder();
-        $qb->select('n')
-            ->from(Note::class, 'n')
-            ->join('n.shares', 's')
-            ->join('s.user', 'u')
-            ->andWhere('s.access = :access')
-            ->andWhere('s.user = :user')
-            ->setParameters([
-                'access' => $access,
-                'user' => $user,
-            ])
-        ;
+    public function share(Note $note, string $access, array $users) : void {
+        $shares = $this->getRepository()->findBy([
+            'note' => $note,
+            'access' => $access,
+        ]);
+        $userIds = array_map(function (User $user) {
+            return $user->getId();
+        }, $users);
+        $newShares = array_filter($shares, function (Share $share) use ($userIds) {
+            return !in_array($share->getUser()->getId(), $userIds);
+        });
+        foreach ($newShares as $share) {
+            foreach ($users as $user) {
+                $newShare = clone $share;
+                $newShare
+                    ->setUser($user)
+                    ->setAccess($access)
+                ;
+                $this->persist($newShare, false);
+            }
+        }
 
-        return $qb->getQuery()->getResult();
+        $this->getManager()->flush();
     }
 
-    /**
-     * @param int $id
-     * @param User $user
-     * @param string|null $access
-     * @return Share[]
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function findOneByUserAndAccess(int $id, User $user, ?string $access = 'read') {
-        /**
-         * @var QueryBuilder $qb
-         */
-        $qb = $this->getManager()->createQueryBuilder();
-        $qb->select('n')
-            ->from(Note::class, 'n')
-            ->join('n.shares', 's')
-            ->join('s.user', 'u')
-            ->andWhere('s.access = :access')
-            ->andWhere('s.user = :user')
-            ->andWhere('n.id = :id')
-            ->setParameters([
-                'access' => $access,
-                'user' => $user,
-                'id' => $id,
-            ])
-        ;
+    public function deshare(Note $note, string $access, array $users) : void {
+        $shares = $this->getRepository()->findBy([
+            'note' => $note,
+            'access' => $access,
+        ]);
+        $userIds = array_map(function (User $user) {
+            return $user->getId();
+        }, $users);
+        $removeShares = array_filter($shares, function (Share $share) use ($userIds, $access) {
+            return in_array($share->getUser()->getId(), $userIds)
+                && $share->getAccess() === $access;
+        });
+        foreach ($removeShares as $share) {
+            $this->remove($share);
+        }
 
-        return $qb->getQuery()->getOneOrNullResult();
+        $this->getManager()->flush();
     }
 }

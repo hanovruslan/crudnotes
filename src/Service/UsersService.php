@@ -4,6 +4,9 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Repository\UsersRepository;
+use DateTime;
+use DateTimeImmutable;
+use RuntimeException;
 
 /**
  * @method UsersRepository getRepository()
@@ -29,14 +32,15 @@ class UsersService extends AbstractService
      */
     public function create(?string $username = null, ?string $fullname = null) : User {
         if (null === $username) {
-            throw new \RuntimeException('empty username');
+            throw new RuntimeException('empty username');
         } elseif ($this->getRepository()->findBy(['username' => $username])) {
-            throw new \RuntimeException('found duplicated username ' . $username);
+            throw new RuntimeException('found duplicated username ' . $username);
         } else {
             $user = (new User())
                 ->setUsername($username)
                 ->setFullname($fullname)
-                ->setCreatedAt(new \DateTimeImmutable());
+                ->setCreatedAt(new DateTimeImmutable())
+                ->setUpdatedAt(new DateTime());
             $this->persist($user);
 
             return $user;
@@ -57,7 +61,7 @@ class UsersService extends AbstractService
      */
     public function findOneByUsername(?string $username = null) : ?User {
         if (null === $username) {
-            throw new \RuntimeException('empty username');
+            throw new RuntimeException('empty username');
         }
 
         return $this->getRepository() ->findOneBy(['username' => $username]);
@@ -71,7 +75,7 @@ class UsersService extends AbstractService
         return array_map(function (string $username) {
             $user = $this->findOneByUsername($username);
             if (!($user instanceof User)) {
-                throw new \RuntimeException('user not found by username' . $username);
+                throw new RuntimeException('user not found by username' . $username);
             }
         }, $usernames);
     }
@@ -88,7 +92,7 @@ class UsersService extends AbstractService
                 $this->persist($user);
             }
         } else {
-            throw new \RuntimeException('user not found by id ' . $id);
+            throw new RuntimeException('user not found by id ' . $id);
         }
     }
 

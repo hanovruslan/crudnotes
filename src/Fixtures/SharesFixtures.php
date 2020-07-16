@@ -5,6 +5,8 @@ namespace App\Fixtures;
 use App\Entity\Note;
 use App\Entity\Share;
 use App\Entity\User;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
@@ -25,31 +27,26 @@ class SharesFixtures extends Fixture implements OrderedFixtureInterface
     {
         /**
          * @var User[] $sharedUsers
-         * @var Note $note
+         * @var Note[] $sharedNotes
          */
         $minSeconds = 12*60*60;
         $maxSeconds = 24*60*60;
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 5; $i++) {
             $sharedNotes = [
                 $this->getReference('note_' . $i),
-                $this->getReference('note_' . (10 + $i)),
             ];
             $sharedUsers = [
-                $this->getReference('user_' . mt_rand(1, 5)),
-                $this->getReference('user_' . mt_rand(16, 20)),
-            ];
-            $accesses = [
-                'read',
-                'write',
+                'read' => $this->getReference('user_' . ($i+1)),
+                'write' => $this->getReference('user_' . (10+$i+1)),
             ];
             foreach ($sharedNotes as $note) {
-                foreach ($sharedUsers as $user) {
+                foreach ($sharedUsers as $access => $user) {
                     $fixture = (new Share())
                         ->setUser($user)
                         ->setNote($note)
-                        ->setAccess($accesses[mt_rand(0, 1)])
-                        ->setCreatedAt(new \DateTimeImmutable('- ' . mt_rand($minSeconds, $maxSeconds) . ' seconds'))
-                        ->setUpdatedAt(new \DateTime('- ' . mt_rand(0, $minSeconds) . ' seconds'))
+                        ->setAccess($access)
+                        ->setCreatedAt(new DateTimeImmutable('- ' . mt_rand($minSeconds, $maxSeconds) . ' seconds'))
+                        ->setUpdatedAt(new DateTime('- ' . mt_rand(1, $minSeconds) . ' seconds'))
                     ;
                     $manager->persist($fixture);
                 }
