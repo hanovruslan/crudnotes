@@ -3,13 +3,12 @@ framework:
         enabled: true
     serializer:
         enabled: true
-        circular_reference_handler: App\Utils\CircularReferenceHandler
-    validation:
-        enabled: true
     secret: '%env(APP_SECRET)%'
     session:
-        handler_id: null
-        cookie_secure: auto
-        cookie_samesite: lax
+        enabled: false
+    validation:
+        enabled: false
     php_errors:
         log: true
+    secrets:
+        enabled: false

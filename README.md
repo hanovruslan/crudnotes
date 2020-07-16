@@ -43,76 +43,88 @@ bin/console doctrine:migrations:diff --allow-empty-diff --line-length=120 --form
 ### users ###
 #### create user #### 
 ```bash
-curl http://admin:admin@127.0.0.1:8000/users \
+curl http://crudnotes.localhost/users \
+    --user admin:admin \
     --header "Content-Type: application/json" \
     --data '{"username":"username","fullname":"fullname"}' \
     --request POST
 ```
 #### read user #### 
 ```bash
-curl http://admin:admin@127.0.0.1:8000/users/21 \
+curl http://crudnotes.localhost/users/21 \
+    --user admin:admin \
     --request GET
 ```
 #### update user #### 
 ```bash
-curl http://admin:admin@127.0.0.1:8000/users/21 \
+curl http://crudnotes.localhost/users/21 \
+    --user admin:admin \
     --header "Content-Type: application/json" \
     --data '{"fullname":"James Bond"}' \
     --request PUT
 ```
 #### delete user #### 
 ```bash
-curl http://admin:admin@127.0.0.1:8000/users/21 \
+curl http://crudnotes.localhost/users/21 \
+    --user admin:admin \
     --request DELETE
 ```
 ### notes ###
 #### create note ####
 ```bash
-curl http://note:note@127.0.0.1:8000/notes \
+curl http://crudnotes.localhost/notes \
+    --user note:note \
     --header "Content-Type: application/json" \
     --data '{"i_am":"username","title":"title","body":"body"}' \
     --request POST
 ```
 #### read note #### 
 ```bash
-curl http://note:note@127.0.0.1:8000/notes/21 \
+curl http://crudnotes.localhost/notes/21 \
+    --user note:note \
     --data '{"i_am":"username"}' \
     --request GET
 ```
 #### update note #### 
 ```bash
-curl http://note:note@127.0.0.1:8000/notes/1 \
+curl http://crudnotes.localhost/notes/1 \
+    --user note:note \
     --header "Content-Type: application/json" \
     --data '{"i_am":"username_1","title":"Foo Bar","body":"Eu non diam phasellus vestibulum lorem sed risus ultricies tristiqu"}' \
     --request PUT
 # or by share write access
-curl http://note:note@127.0.0.1:8000/notes/1 \
+curl http://crudnotes.localhost/notes/1 \
+    --user note:note \
     --header "Content-Type: application/json" \
     --data '{"i_am":"username_12","title":"Foobar","body":"The etymology of foobar is generally traced to the World War II military slang FUBAR"}' \
     --request PUT
 ```
 #### delete note #### 
 ```bash
-curl http://note:note@127.0.0.1:8000/notes/21 \
+curl http://crudnotes.localhost/notes/21 \
+    --user note:note \
     --data '{"i_am":"username"}' \
     --request DELETE
 ```
 #### list notes ####
 ```bash
-curl http://note:note@127.0.0.1:8000/notes \
+curl http://crudnotes.localhost/notes \
+    --user note:note \
     --data '{"i_am":"username_1"}' \
     --request GET
 ```
 #### share note ####
 ```bash
-curl http://note:note@127.0.0.1:8000/notes/1/share \
+curl http://crudnotes.localhost/notes/1/share \
+    --user note:note \
     --header "Content-Type: application/json" \
     --data '{"i_am":"username_1","access"=>"read","usernames":["username_3","username_4"]}' \
     --request PUT
 ```
 #### deshare note ####
 ```bash
-curl http://note:note@127.0.0.1:8000/notes/1/share \
+curl http://crudnotes.localhost/notes/1/share \
+    --user note:note \
     --header "Content-Type: application/json" \
     --data '{"i_am":"username_1","access"=>"read","usernames":["username_3","username_4"]}' \
     --request DELETE
