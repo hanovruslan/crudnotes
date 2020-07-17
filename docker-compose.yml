@@ -1,5 +1,12 @@
 version: '3.0'
 services:
+    composer:
+        image: composer:1.8.6
+        volumes:
+            - ./:/var/www/html
+        command: >
+            bash -c "cd /var/www/html
+            && composer i"
     nginx:
         image: nginx:stable-alpine
         ports:
@@ -14,10 +21,17 @@ services:
         build: ./docker/php-fpm
         ports:
             - "9000:9000"
+        depends_on:
+            - composer
         links:
             - mysql
         volumes:
             - ./:/var/www/html
+        command: >
+            sh -c "cd /var/www/html
+            && bin/console doctrine:migrations:migrate -n
+            && bin/console doctrine:fixtures:load -n
+            && php-fpm"
     mysql:
         image: mysql:5.7.19
         environment:

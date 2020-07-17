@@ -1,44 +1,13 @@
 # crud notes #
-## mysql/docker helpers ##
-### create ###
+
+## install and run ##
+
 ```bash
-( \
-export NAME=crudnotes && docker run \
-    -e MYSQL_ROOT_PASSWORD=root \
-    -e MYSQL_DATABASE=${NAME} \
-    -e MYSQL_USER=${NAME} \
-    -e MYSQL_PASSWORD=${NAME} \
-    --rm -d --name ${NAME} mysql:5.7.19 \
-)
+docker-compose up
 ```
-### find ip ###
-```bash
-( \
-export NAME=crudnotes && \
-    echo $(docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${NAME}) \
-)
-```
-### connect ###
-```bash
-( \
-export NAME=crudnotes && mysql \
-    -h $(docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${NAME}) \
-    -u ${NAME} \
-    -n ${NAME} \
-    --password=${NAME} \
-)
-```
-### recreate database and load fixtures ###
-```bash
-bin/console doctrine:database:drop --if-exists -f \
-&& bin/console doctrine:database:create --if-not-exists \
-&& bin/console doctrine:migrations:migrate -n \
-&& bin/console doctrine:fixtures:load -n
-```
-### create migration ###
-```bash
-bin/console doctrine:migrations:diff --allow-empty-diff --line-length=120 --formatted -n
-```
+
+[click me](http://crudnotes.localhost) or use api helpers
+
 ## api helpers ##
 ### users ###
 #### create user #### 
@@ -128,4 +97,44 @@ curl http://crudnotes.localhost/notes/1/share \
     --header "Content-Type: application/json" \
     --data '{"i_am":"username_1","access"=>"read","usernames":["username_3","username_4"]}' \
     --request DELETE
+```
+## mysql/docker helpers ##
+### create ###
+```bash
+( \
+export NAME=crudnotes && docker run \
+    -e MYSQL_ROOT_PASSWORD=root \
+    -e MYSQL_DATABASE=${NAME} \
+    -e MYSQL_USER=${NAME} \
+    -e MYSQL_PASSWORD=${NAME} \
+    --rm -d --name ${NAME} mysql:5.7.19 \
+)
+```
+### find ip ###
+```bash
+( \
+export NAME=crudnotes && \
+    echo $(docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${NAME}) \
+)
+```
+### connect ###
+```bash
+( \
+export NAME=crudnotes && mysql \
+    -h $(docker inspect --format '{{ .NetworkSettings.IPAddress }}' ${NAME}) \
+    -u ${NAME} \
+    -n ${NAME} \
+    --password=${NAME} \
+)
+```
+### recreate database and load fixtures ###
+```bash
+bin/console doctrine:database:drop --if-exists -f \
+&& bin/console doctrine:database:create --if-not-exists \
+&& bin/console doctrine:migrations:migrate -n \
+&& bin/console doctrine:fixtures:load -n
+```
+### create migration ###
+```bash
+bin/console doctrine:migrations:diff --allow-empty-diff --line-length=120 --formatted -n
 ```
