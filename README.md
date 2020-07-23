@@ -2,6 +2,12 @@
 
 ## install and run ##
 
+### create .env from .dist ###
+
+replace `/YOUR/HOME/` with **static**path to you home dir
+
+### run ###
+
 ```bash
 export _UID="$(id -u)" \
     && export _GID="$(id -g)" \
