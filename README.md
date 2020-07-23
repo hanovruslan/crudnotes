@@ -3,7 +3,11 @@
 ## install and run ##
 
 ```bash
-docker-compose up
+export _UID="$(id -u)" \
+    && export _GID="$(id -g)" \
+    && time docker-compose run --rm --no-deps --user="${_UID}:${_GID}" composer \
+    && time docker-compose run --rm --user="${_UID}:${_GID}" migration_and_fixtures \
+    && docker-compose up --remove-orphans nginx
 ```
 
 [click me](http://crudnotes.localhost) or use api helpers
