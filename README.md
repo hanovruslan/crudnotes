@@ -4,7 +4,7 @@
 
 ### create .env from .dist ###
 
-replace `/YOUR/HOME/` with **static**path to you home dir
+replace `/YOUR/HOME/` with **static** path to you home dir
 
 ### run ###
 
