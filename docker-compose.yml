@@ -1,43 +1,70 @@
 version: '3.0'
 services:
     composer:
-        image: composer:1.8.6
+        env_file: .env
+        user: "$_UID:$_GID"
+        network_mode: "host"
+        image: "composer:$COMPOSER_VERSION"
+        working_dir: "$APP_SOURCE_ROOT"
+        environment:
+            COMPOSER_HOME: "$COMPOSER_HOME"
+            COMPOSER_CACHE_DIR: "$COMPOSER_CACHE_DIR"
         volumes:
-            - ./:/var/www/html
-        command: >
-            bash -c "cd /var/www/html
-            && composer i"
-    nginx:
-        image: nginx:stable-alpine
+            - "$COMPOSER_HOME:$COMPOSER_HOME"
+            - "$COMPOSER_CACHE_DIR:$COMPOSER_CACHE_DIR"
+            - "./composer.json:$APP_SOURCE_ROOT/composer.json"
+            - "./vendor:$APP_SOURCE_ROOT/vendor"
+        command: "composer install"
+    mysql:
+        image: "mysql:$MYSQL_VERSION"
+        env_file: .env
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER}", "-p${MYSQL_USER}"]
+            interval: 3s
+            retries: 10
+            timeout: 1s
+        environment:
+            MYSQL_DATABASE: "$MYSQL_USER"
+            MYSQL_USER: "$MYSQL_USER"
+            MYSQL_PASSWORD: "$MYSQL_USER"
+            MYSQL_ROOT_PASSWORD: "$MYSQL_ROOT_PASSWORD"
         ports:
-            - "80:80"
-        volumes:
-            - ./:/var/www/html
-            - ./docker/nginx/etc/nginx/nginx.conf:/etc/nginx/nginx.conf
-            - ./docker/nginx/etc/nginx/sites-enabled:/etc/nginx/sites-enabled
+            - "3306:3306"
+    migration_and_fixtures:
         depends_on:
-            - php-fpm
+            - mysql
+        build:
+            context: docker/migration_and_fixtures
+            args:
+                PHP_VERSION: "$PHP_VERSION"
+        env_file: .env
+        user: "$_UID:$_GID"
+        working_dir: "$APP_SOURCE_ROOT"
+        volumes:
+            - "./:$APP_SOURCE_ROOT"
     php-fpm:
-        build: ./docker/php-fpm
+        build:
+            context: ./docker/php-fpm
+            args:
+                PHP_VERSION: "$PHP_VERSION"
+        env_file: .env
+        user: "$_UID:$_GID"
+        depends_on:
+          - mysql
         ports:
             - "9000:9000"
-        depends_on:
-            - composer
         links:
             - mysql
         volumes:
-            - ./:/var/www/html
-        command: >
-            sh -c "cd /var/www/html
-            && bin/console doctrine:migrations:migrate -n
-            && bin/console doctrine:fixtures:load -n
-            && php-fpm"
-    mysql:
-        image: mysql:5.7.19
-        environment:
-            MYSQL_DATABASE: crudnotes
-            MYSQL_USER: crudnotes
-            MYSQL_PASSWORD: crudnotes
-            MYSQL_ROOT_PASSWORD: root
+            - "./:$APP_SOURCE_ROOT"
+    nginx:
+        image: "nginx:$NGINX_VERSION-alpine"
+        env_file: .env
         ports:
-            - "3306:3306"
+            - "80:80"
+        volumes:
+            - "./:$APP_SOURCE_ROOT"
+            - "./docker/nginx/etc/nginx/nginx.conf:/etc/nginx/nginx.conf"
+            - "./docker/nginx/etc/nginx/sites-enabled:/etc/nginx/sites-enabled"
+        depends_on:
+            - "php-fpm"
