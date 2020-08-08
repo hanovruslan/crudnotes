@@ -3,64 +3,58 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Service\UsersService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use Throwable;
 
 class UsersController extends AbstractController
 {
-    protected function getData(Request $request) : array {
-        return \json_decode($request->getContent(), true);
-    }
-
     /**
      * @Route("/users", methods={"GET"})
-     * @param UsersService $userService
      * @return JsonResponse
      */
-    public function list(UsersService $userService)
+    public function list(): JsonResponse
     {
         return $this->json(
-            $userService->list()
+            $this->getUsersService()->list()
         );
     }
 
     /**
      * @Route("/users", methods={"POST"})
-     * @param UsersService $userService
      * @param Request $request
      * @return RedirectResponse
+     * @throws BadRequestHttpException
      */
-    public function create(UsersService $userService, Request $request) : RedirectResponse
+    public function create(Request $request) : RedirectResponse
     {
         try {
             $data = $this->getData($request);
-            $user = $userService->create(
+            $user = $this->getUsersService()->create(
                 $data['username'] ?? null,
                 $data['fullname'] ?? null
             );
             return $this->redirectToRoute('user_read', [
                 'id' => $user->getId(),
             ]);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new BadRequestHttpException($exception->getMessage());
         }
     }
 
     /**
      * @Route("/users/{id}", methods={"GET"}, name="user_read", requirements={"id"="\d+"})
-     * @param UsersService $userService
      * @param int $id
      * @return JsonResponse
+     * @throws NotFoundHttpException
      */
-    public function read(UsersService $userService, int $id)
+    public function read(int $id) : JsonResponse
     {
-        $user = $userService->read($id);
+        $user = $this->getUsersService()->read($id);
         if (!($user instanceof User)) {
             throw new NotFoundHttpException();
         }
@@ -72,34 +66,32 @@ class UsersController extends AbstractController
 
     /**
      * @Route("/users/{id}", methods={"PUT"})
-     * @param UsersService $userService
      * @param int $id
      * @param Request $request
      * @return RedirectResponse
      */
-    public function update(UsersService $userService, int $id, Request $request) : RedirectResponse
+    public function update(int $id, Request $request) : RedirectResponse
     {
         try {
-            $data = \json_decode($request->getContent(), true);
-            $userService->update($id, $data['fullname'] ?? null);
+            $data = $this->getData($request);
+            $this->getUsersService()->update($id, $data['fullname'] ?? null);
 
             return $this->redirectToRoute('user_read', [
                 'id' => $id,
             ]);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new BadRequestHttpException($exception->getMessage());
         }
     }
 
     /**
      * @Route("/users/{id}", methods={"DELETE"})
-     * @param UsersService $userService
      * @param int $id
      * @return JsonResponse
      */
-    public function delete(UsersService $userService, int $id)
+    public function delete(int $id): JsonResponse
     {
-        $userService->delete($id);
+        $this->getUsersService()->delete($id);
 
         return $this->json([]);
     }

@@ -3,12 +3,12 @@
 namespace App\Service;
 
 use App\Entity\Note;
-use App\Entity\Share;
 use App\Entity\User;
 use App\Repository\NotesRepository;
 use DateTime;
 use DateTimeImmutable;
-use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\UnexpectedResultException;
 use RuntimeException;
 
 /**
@@ -16,34 +16,11 @@ use RuntimeException;
  */
 class NotesService extends AbstractService
 {
-    function getClassName(): string
-    {
-        return Note::class;
-    }
-
     /**
      * @return array|Note[]
      */
     public function list() : array {
         return $this->getRepository()->findAll();
-    }
-
-    /**
-     * @param User $user
-     * @return array|Note[]
-     */
-    public function findByUser(User $user) : array {
-        return $this->getRepository()->findBy([
-            'user' => $user,
-        ], ['updatedAt' => 'DESC']);
-    }
-
-    /**
-     * @param User $user
-     * @return array|Note[]
-     */
-    public function listBySharedUser(User $user) : array {
-        return $this->getRepository()->findBySharedUser($user);
     }
 
     /**
@@ -55,32 +32,20 @@ class NotesService extends AbstractService
     public function create(?string $title = null, ?string $body = null, ?User $author = null) : Note {
         if (null === $title) {
             throw new RuntimeException('empty title');
-        } elseif (!($author instanceof User)) {
-            throw new RuntimeException('empty user');
-        } else {
-            $note = (new Note())
-                ->setTitle($title)
-                ->setBody($body)
-                ->setUser($author)
-                ->setCreatedAt(new DateTimeImmutable())
-                ->setUpdatedAt(new DateTime())
-            ;
-            $this->persist($note);
-
-            return $note;
         }
-    }
+        if (!($author instanceof User)) {
+            throw new RuntimeException('empty user');
+        }
+        $note = (new Note())
+            ->setTitle($title)
+            ->setBody($body)
+            ->setUser($author)
+            ->setCreatedAt(new DateTimeImmutable())
+            ->setUpdatedAt(new DateTime())
+        ;
+        $this->persist($note);
 
-    /**
-     * @param int $id
-     * @param User $author
-     * @return Note|object|null
-     */
-    public function findOneBy(User $author, int $id) : ?Note {
-        return $this->getRepository() ->findOneBy([
-            'id' => $id,
-            'user' => $author,
-        ]);
+        return $note;
     }
 
     /**
@@ -107,22 +72,89 @@ class NotesService extends AbstractService
     }
 
     /**
-     * @param User $user
-     * @param string|null $access
-     * @return Note[]
+     * @param string|null $username
+     * @return array|Note[]
      */
-    public function findAvailableBy(User $user, ?string $access = 'read') {
-        return $this->getRepository()->findByUserAndAccess($user, $access);
+    public function findByUsername(string $username = null) : array {
+        if (null === $username) {
+            throw new RuntimeException('empty username');
+        }
+
+        return $this->getRepository()->findByUsername($username);
     }
 
     /**
-     * @param User $user
-     * @param string $access
      * @param int $id
-     * @return Note|null
-     * @throws NonUniqueResultException
+     * @param string|null $username
+     * @return bool
      */
-    public function findOneAvailableBy(User $user, string $access, int $id) {
-        return $this->getRepository()->findOneByUserAndAccessAndId($user, $access, $id);
+    public function hasOneByIdAndUsername(int $id, string $username = null) : bool {
+        $result = false;
+        if (null === $username) {
+            throw new RuntimeException('empty username');
+        }
+        try {
+            $result = $this->getRepository()->hasOneByIdAndUsername($id, $username);
+        } catch (UnexpectedResultException $e) {
+            // do nothing
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param int $id
+     * @param string|null $username
+     * @return Note|null
+     */
+    public function findOneByIdAndUsername(int $id, string $username = null) : ?Note {
+        if (null === $username) {
+            throw new RuntimeException('empty username');
+        }
+
+        return $this->getRepository() ->findOneByIdAndUsername($id, $username);
+    }
+
+    /**
+     * @param int $id
+     * @param string|null $username
+     * @param string $access
+     * @return Note|null
+     * @throws UnexpectedResultException
+     */
+    public function findOneByIdAndUsernameAndAccess(int $id, string $username = null, string $access = 'read') : ?Note {
+        $result = null;
+        try {
+            if (null === $username) {
+                throw new RuntimeException('empty username');
+            }
+            $result = $this->getRepository() ->findOneByIdAndUsernameAndAccess(
+                $id,
+                $username,
+                $access
+            );
+        } catch (NoResultException $exception) {
+            // do nothing
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string|null $username
+     * @param string|null $access
+     * @return Note[]
+     */
+    public function findAvailableBy(string $username = null, string $access = 'read'): array
+    {
+        if (null === $username) {
+            throw new RuntimeException('empty username');
+        }
+        return $this->getRepository()->findByUsernameAndAccess($username, $access);
+    }
+
+    protected function getClassName(): string
+    {
+        return Note::class;
     }
 }

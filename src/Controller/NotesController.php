@@ -5,88 +5,73 @@ namespace App\Controller;
 use App\Entity\Note;
 use App\Service\NotesService;
 use App\Service\SharesService;
-use App\Service\UsersService;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\ORM\NoResultException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
 use Throwable;
-use function json_decode;
 
 class NotesController extends AbstractController
 {
-    protected function getData(Request $request) : array {
-        return json_decode($request->getContent(), true) ?? [];
-    }
+    /**
+     * @var NotesService|null
+     */
+    protected ?NotesService $notesService;
 
     /**
-     * @Route("/notes", methods={"GET"})
+     * @var SharesService|null
+     */
+    protected ?SharesService $sharesService;
+
+    /**
      * @param Request $request
-     * @param NotesService $notesService
-     * @param UsersService $usersService
      * @return JsonResponse
      */
     public function list(
-        Request $request,
-        NotesService $notesService,
-        UsersService $usersService
-    ) : JsonResponse {
+        Request $request
+    ) : JsonResponse
+    {
         try {
             $data = $this->getData($request);
-            $iAm = $usersService->findOneByUsername($data['i_am'] ?? null);
-
             return $this->json(
-                $notesService->findByUser($iAm)
+                $this->getNotesService()->findByUsername($data['i_am'] ?? null)
             );
-
         } catch (Throwable $exception) {
             throw new BadRequestHttpException($exception->getMessage());
         }
     }
 
     /**
-     * @Route("/notes/available", methods={"GET"})
-     * @param UsersService $usersService
-     * @param NotesService $notesService
      * @param Request $request
      * @return JsonResponse
      */
     public function available(
-        Request $request,
-        UsersService $usersService,
-        NotesService $notesService
+        Request $request
     ) : JsonResponse {
         try {
             $data = $this->getData($request);
-            $iAm = $usersService->findOneByUsername($data['i_am'] ?? null);
 
             return $this->json(
-                $notesService->findAvailableBy($iAm, $data['access'] ?? 'read')
+                $this->getNotesService()->findAvailableBy($data['i_am'] ?? null, $data['access'] ?? 'read')
             );
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new BadRequestHttpException($exception->getMessage());
         }
     }
 
     /**
-     * @Route("/notes", methods={"POST"})
      * @param Request $request
-     * @param NotesService $notesService
-     * @param UsersService $usersService
      * @return RedirectResponse
      */
     public function create(
-        Request $request,
-        NotesService $notesService,
-        UsersService $usersService
+        Request $request
     ) : RedirectResponse {
         try {
             $data = $this->getData($request);
-            $iAm = $usersService->findOneByUsername($data['i_am'] ?? null);
-            $note = $notesService->create(
+            $iAm = $this->getUsersService()->findOneByUsername($data['i_am'] ?? null);
+            $note = $this->getNotesService()->create(
                 $data['title'] ?? null,
                 $data['body'] ?? null,
                 $iAm
@@ -100,27 +85,17 @@ class NotesController extends AbstractController
     }
 
     /**
-     * @Route("/notes/{id}", methods={"GET"}, name="note_read", requirements={"id"="\d+"})
-     * @param NotesService $notesService
-     * @param UsersService $usersService
      * @param Request $request
      * @param int $id
      * @return JsonResponse
      */
     public function read(
         int $id,
-        Request $request,
-        NotesService $notesService,
-        UsersService $usersService
+        Request $request
     ) : JsonResponse {
         try {
             $data = $this->getData($request);
-            $iAm = $usersService->findOneByUsername($data['i_am'] ?? null);
-            $note = ($note = $notesService->findOneBy($iAm, $id))
-                or ($note = $notesService->findOneAvailableBy($iAm, 'read', $id))
-                or ($note = $notesService->findOneAvailableBy($iAm, 'write', $id))
-                ? $note
-                : null;
+            $note = $this->getNotesService()->findOneByIdAndUsernameAndAccess($id, $data['i_am'] ?? null);
             if (!($note instanceof Note)) {
                 throw new NotFoundHttpException();
             }
@@ -128,37 +103,27 @@ class NotesController extends AbstractController
             return $this->json([
                 $note
             ]);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new BadRequestHttpException($exception->getMessage());
         }
     }
 
     /**
-     * @Route("/notes/{id}", methods={"PUT"})
      * @param int $id
      * @param Request $request
-     * @param NotesService $notesService
-     * @param UsersService $usersService
      * @return RedirectResponse
      */
     public function update(
         int $id,
-        Request $request,
-        NotesService $notesService,
-        UsersService $usersService
+        Request $request
     ) : RedirectResponse {
         try {
             $data = $this->getData($request);
-            $iAm = $usersService->findOneByUsername($data['i_am'] ?? null);
-            $note = ($note = $notesService->findOneBy($iAm, $id))
-                or ($note = $notesService->findOneAvailableBy($iAm, 'write', $id))
-                ? $note
-                : null;
+            $note = $this->getNotesService()->findOneByIdAndUsernameAndAccess($id, $data['i_am'] ?? null, 'write');
             if (!($note instanceof Note)) {
                 throw new NotFoundHttpException();
             }
-
-            $notesService->update(
+            $this->getNotesService()->update(
                 $note,
                 $data['title'] ?? null,
                 $data['body'] ?? null
@@ -173,55 +138,42 @@ class NotesController extends AbstractController
     }
 
     /**
-     * @Route("/notes/{id}", methods={"DELETE"})
      * @param int $id
      * @param Request $request
-     * @param NotesService $notesService
-     * @param UsersService $usersService
      * @return JsonResponse
      */
     public function delete(
         int $id,
-        Request $request,
-        NotesService $notesService,
-        UsersService $usersService
+        Request $request
     ) : JsonResponse {
+        $result = $this->json([]);
         try {
             $data = $this->getData($request);
-            $iAm = $usersService->findOneByUsername($data['i_am'] ?? null);
-            $note = $notesService->findOneBy($iAm, $id);
+            $note = $this->getNotesService()->findOneByIdAndUsername($id, $data['i_am'] ?? null);
             if ($note instanceof Note) {
-                $notesService->delete($note);
+                $this->getNotesService()->delete($note);
             }
-
-            return $this->json([]);
+        } catch (NoResultException $exception) {
+            // do nothing
         } catch (Throwable $exception) {
             throw new BadRequestHttpException($exception->getMessage());
         }
+
+        return $result;
     }
 
     /**
-     * @Route("/notes/{id}/share", methods={"PUT"})
      * @param int $id
      * @param Request $request
-     * @param NotesService $notesService
-     * @param UsersService $usersService
-     * @param SharesService $sharesService
      * @return JsonResponse
      */
     public function share(
         int $id,
-        Request $request,
-        NotesService $notesService,
-        UsersService $usersService,
-        SharesService $sharesService
+        Request $request
     ) : JsonResponse {
         try {
-            $data = $this->getData($request);
-            $iAm = $usersService->findOneByUsername($data['i_am'] ?? null);
-            $note = $notesService->findOneBy($iAm, $id);
-            $users = $usersService->findByUsernames($data['usernames'] ?? null);
-            $sharesService->share($note, $data['access'] ?? 'read', $users);
+            [$access, $usernames] = $this->prepareShareable($request, $id);
+            $this->getSharesService()->share($id, $usernames, $access);
 
             return $this->json([]);
         } catch (Throwable $exception) {
@@ -230,31 +182,80 @@ class NotesController extends AbstractController
     }
 
     /**
-     * @Route("/notes/{id}/share", methods={"DELETE"})
      * @param int $id
      * @param Request $request
-     * @param NotesService $notesService
-     * @param UsersService $usersService
-     * @param SharesService $sharesService
      * @return JsonResponse
      */
     public function deshare(
         int $id,
-        Request $request,
-        NotesService $notesService,
-        UsersService $usersService,
-        SharesService $sharesService
+        Request $request
     ) : JsonResponse {
+        $result = $this->json([]);
         try {
-            $data = $this->getData($request);
-            $iAm = $usersService->findOneByUsername($data['i_am'] ?? null);
-            $note = $notesService->findOneBy($iAm, $id);
-            $users = $usersService->findByUsernames($data['usernames'] ?? null);
-            $sharesService->deshare($note, $data['access'] ?? 'read', $users);
-
-            return $this->json([]);
+            [$access, $usernames] = $this->prepareShareable($request, $id);
+            $this->getSharesService()->deshare($id, $usernames, $access);
         } catch (Throwable $exception) {
             throw new BadRequestHttpException($exception->getMessage());
         }
+
+        return $result;
+    }
+
+    /**
+     * @param Request $request
+     * @param int $id
+     * @return array
+     */
+    protected function prepareShareable(
+        Request $request,
+        int $id
+    ): array {
+        $data = $this->getData($request);
+        if (!$this->getNotesService()->hasOneByIdAndUsername($id, $data['i_am'] ?? null)) {
+            throw new NotFoundHttpException();
+        }
+        $data['usernames'] = array_diff($data['usernames'], [$data['i_am']]);
+        $usernames = $this->getUsersService()->filterUsernames($data['usernames'] ?? null);
+        return [
+            $data['access'] ?? 'read',
+            $usernames,
+        ];
+    }
+
+
+    /**
+     * @return NotesService|null
+     */
+    public function getNotesService(): ?NotesService
+    {
+        return $this->notesService;
+    }
+
+    /**
+     * @param NotesService|null $notesService
+     * @return static
+     */
+    public function setNotesService(?NotesService $notesService = null)
+    {
+        $this->notesService = $notesService;
+        return $this;
+    }
+
+    /**
+     * @return SharesService|null
+     */
+    public function getSharesService(): ?SharesService
+    {
+        return $this->sharesService;
+    }
+
+    /**
+     * @param SharesService|null $sharesService
+     * @return static
+     */
+    public function setSharesService(?SharesService $sharesService = null)
+    {
+        $this->sharesService = $sharesService;
+        return $this;
     }
 }

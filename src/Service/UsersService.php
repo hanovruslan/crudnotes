@@ -13,7 +13,7 @@ use RuntimeException;
  */
 class UsersService extends AbstractService
 {
-    function getClassName(): string
+    protected function getClassName(): string
     {
         return User::class;
     }
@@ -33,18 +33,18 @@ class UsersService extends AbstractService
     public function create(?string $username = null, ?string $fullname = null) : User {
         if (null === $username) {
             throw new RuntimeException('empty username');
-        } elseif ($this->getRepository()->findBy(['username' => $username])) {
-            throw new RuntimeException('found duplicated username ' . $username);
-        } else {
-            $user = (new User())
-                ->setUsername($username)
-                ->setFullname($fullname)
-                ->setCreatedAt(new DateTimeImmutable())
-                ->setUpdatedAt(new DateTime());
-            $this->persist($user);
-
-            return $user;
         }
+        if ($this->getRepository()->findBy(['username' => $username])) {
+            throw new RuntimeException('found duplicated username ' . $username);
+        }
+        $user = (new User())
+            ->setUsername($username)
+            ->setFullname($fullname)
+            ->setCreatedAt(new DateTimeImmutable())
+            ->setUpdatedAt(new DateTime());
+        $this->persist($user);
+
+        return $user;
     }
 
     /**
@@ -56,10 +56,10 @@ class UsersService extends AbstractService
     }
 
     /**
-     * @param string $username
+     * @param string|null $username
      * @return User|object|null
      */
-    public function findOneByUsername(?string $username = null) : ?User {
+    public function findOneByUsername(string $username = null) : ?User {
         if (null === $username) {
             throw new RuntimeException('empty username');
         }
@@ -71,13 +71,8 @@ class UsersService extends AbstractService
      * @param string[] $usernames
      * @return User[]
      */
-    public function findByUsernames(?array $usernames = []) : array {
-        return array_map(function (string $username) {
-            $user = $this->findOneByUsername($username);
-            if (!($user instanceof User)) {
-                throw new RuntimeException('user not found by username' . $username);
-            }
-        }, $usernames);
+    public function filterUsernames(array $usernames = []) : array {
+        return $this->getRepository()->filterByUsernames($usernames);
     }
 
     /**

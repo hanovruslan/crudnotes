@@ -1,3 +1,4 @@
-controllers:
-    resource: '../src/Controller/'
-    type: annotation
+notes:
+    resource: routes/notes.yml
+users:
+    resource: routes/users.yml

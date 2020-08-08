@@ -59,9 +59,9 @@ curl http://crudnotes.localhost/notes \
 ```
 #### read note #### 
 ```bash
-curl http://crudnotes.localhost/notes/21 \
+curl http://crudnotes.localhost/notes/1 \
     --user note:note \
-    --data '{"i_am":"username"}' \
+    --data '{"i_am":"username_1"}' \
     --request GET
 ```
 #### update note #### 
@@ -92,12 +92,22 @@ curl http://crudnotes.localhost/notes \
     --data '{"i_am":"username_1"}' \
     --request GET
 ```
+#### available notes ####
+
+notes shared for this user by read or write access
+
+```bash
+curl http://crudnotes.localhost/notes/available \
+    --user note:note \
+    --data '{"i_am":"username_1","access":"read"}' \
+    --request GET
+```
 #### share note ####
 ```bash
 curl http://crudnotes.localhost/notes/1/share \
     --user note:note \
     --header "Content-Type: application/json" \
-    --data '{"i_am":"username_1","access"=>"read","usernames":["username_3","username_4"]}' \
+    --data '{"i_am":"username_1","access":"read","usernames":["username_3","username_4"]}' \
     --request PUT
 ```
 #### deshare note ####
@@ -105,7 +115,7 @@ curl http://crudnotes.localhost/notes/1/share \
 curl http://crudnotes.localhost/notes/1/share \
     --user note:note \
     --header "Content-Type: application/json" \
-    --data '{"i_am":"username_1","access"=>"read","usernames":["username_3","username_4"]}' \
+    --data '{"i_am":"username_1","access":"read","usernames":["username_3","username_4"]}' \
     --request DELETE
 ```
 ## mysql/docker helpers ##
@@ -117,7 +127,7 @@ export NAME=crudnotes && docker run \
     -e MYSQL_DATABASE=${NAME} \
     -e MYSQL_USER=${NAME} \
     -e MYSQL_PASSWORD=${NAME} \
-    --rm -d --name ${NAME} mysql:5.7.19 \
+    --rm -d --name ${NAME} mysql:5.7.31 \
 )
 ```
 ### find ip ###

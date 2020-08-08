@@ -11,7 +11,7 @@ abstract class AbstractService
     /**
      * @var ManagerRegistry
      */
-    protected $managerRegistry;
+    protected ManagerRegistry $managerRegistry;
     public function __construct(ManagerRegistry $managerRegistry)
     {
         $this->managerRegistry = $managerRegistry;
@@ -45,7 +45,7 @@ abstract class AbstractService
      * @param mixed $object
      * @param bool $andFlush
      */
-    public function persist($object, bool $andFlush = true) : void {
+    protected function persist($object, bool $andFlush = true) : void {
         $this->getManager()->persist($object);
         if ($andFlush) {
             $this->getManager()->flush();
