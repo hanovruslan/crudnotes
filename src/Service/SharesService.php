@@ -8,6 +8,8 @@ use App\Entity\User;
 use App\Repository\NotesRepository;
 use App\Repository\SharesRepository;
 use App\Repository\UsersRepository;
+use DateTime;
+use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -52,21 +54,13 @@ class SharesService extends AbstractService
     public function share(int $id, array $usernames, string $access = 'read') : void {
         $notes = $this->notesRepository->findByIdAndUsernamesAndWithoutAccess($id, $usernames, $access);
         $users = $this->usersRepository->findBy(['username' => $usernames]);
-        die(print_r([
-            __FILE__,
-            __LINE__,
-            array_map(static function (Note $note) {
-                return [
-                    $note->getId(),
-                    $note->getTitle(),
-                ];
-            }, $notes),
-            $usernames,
-        ], true));
         foreach ($notes as $note) {
             foreach ($users as $user) {
                 $share = (new Share)
                     ->setNote($note)
+                    ->setAccess($access)
+                    ->setCreatedAt(new DateTimeImmutable())
+                    ->setUpdatedAt(new DateTime())
                     ->setUser($user);
                 $this->persist($share, false);
             }

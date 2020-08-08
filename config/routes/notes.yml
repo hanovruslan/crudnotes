@@ -42,7 +42,7 @@ notes_share:
     requirements:
         'id': '\d+'
 notes_deshare:
-    controller: 'app.controller.notes::share'
+    controller: 'app.controller.notes::deshare'
     path: /notes/{id}/share
     format: json
     methods: DELETE

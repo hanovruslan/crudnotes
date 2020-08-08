@@ -18,19 +18,19 @@ class Share
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    protected ?int $id;
+    protected ?int $id = null;
 
     /**
      * @var DateTimeImmutable|null
      * @ORM\Column(type="datetime_immutable")
      */
-    protected ?DateTimeImmutable $createdAt;
+    protected ?DateTimeImmutable $createdAt = null;
 
     /**
      * @var DateTime|null
      * @ORM\Column(type="datetime")
      */
-    protected ?DateTime $updatedAt;
+    protected ?DateTime $updatedAt = null;
 
     /**
      * @var string|null
@@ -43,14 +43,14 @@ class Share
      * @ORM\ManyToOne(targetEntity="App\Entity\Note", inversedBy="shares")
      * @MaxDepth(value=1)
      */
-    protected ?Note $note;
+    protected ?Note $note = null;
 
     /**
      * @var User|null
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="shares")
      * @MaxDepth(value=1)
      */
-    protected ?User $user;
+    protected ?User $user = null;
 
     /**
      * @return User|null
