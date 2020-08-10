@@ -5,17 +5,39 @@ namespace App\Service;
 use App\Entity\Note;
 use App\Entity\Share;
 use App\Entity\User;
+use App\Repository\NotesRepository;
 use App\Repository\SharesRepository;
+use App\Repository\UsersRepository;
+use DateTime;
+use DateTimeImmutable;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @method SharesRepository getRepository()
  */
 class SharesService extends AbstractService
 {
-    protected function getClassName(): string
-    {
-        return Share::class;
+    /**
+     * @var NotesRepository
+     */
+    protected NotesRepository $notesRepository;
+
+    /**
+     * @var UsersRepository
+     */
+    protected UsersRepository $usersRepository;
+
+    public function __construct(
+        ManagerRegistry $managerRegistry,
+        NotesRepository $notesRepository,
+        UsersRepository $usersRepository
+    ) {
+        parent::__construct($managerRegistry);
+        $this->notesRepository = $notesRepository;
+        $this->usersRepository = $usersRepository;
     }
+
+
 
     /**
      * @return array|User[]
@@ -25,51 +47,40 @@ class SharesService extends AbstractService
     }
 
     /**
-     * @param Note $note
+     * @param int $id
+     * @param string[] $usernames
      * @param string $access
-     * @param User[] $users
      */
-    public function share(Note $note, string $access, array $users) : void {
-        $shares = $this->getRepository()->findBy([
-            'note' => $note,
-            'access' => $access,
-        ]);
-        $userIds = array_map(function (User $user) {
-            return $user->getId();
-        }, $users);
-        $newShares = array_filter($shares, function (Share $share) use ($userIds) {
-            return !in_array($share->getUser()->getId(), $userIds);
-        });
-        foreach ($newShares as $share) {
+    public function share(int $id, array $usernames, string $access = 'read') : void {
+        $notes = $this->notesRepository->findByIdAndUsernamesAndWithoutAccess($id, $usernames, $access);
+        $users = $this->usersRepository->findBy(['username' => $usernames]);
+        foreach ($notes as $note) {
             foreach ($users as $user) {
-                $newShare = clone $share;
-                $newShare
-                    ->setUser($user)
+                $share = (new Share)
+                    ->setNote($note)
                     ->setAccess($access)
-                ;
-                $this->persist($newShare, false);
+                    ->setCreatedAt(new DateTimeImmutable())
+                    ->setUpdatedAt(new DateTime())
+                    ->setUser($user);
+                $this->persist($share, false);
             }
         }
 
         $this->getManager()->flush();
     }
 
-    public function deshare(Note $note, string $access, array $users) : void {
-        $shares = $this->getRepository()->findBy([
-            'note' => $note,
-            'access' => $access,
-        ]);
-        $userIds = array_map(function (User $user) {
-            return $user->getId();
-        }, $users);
-        $removeShares = array_filter($shares, function (Share $share) use ($userIds, $access) {
-            return in_array($share->getUser()->getId(), $userIds)
-                && $share->getAccess() === $access;
-        });
-        foreach ($removeShares as $share) {
+    public function deshare(int $id, array $usernames, string $access) : void {
+        $shares = $this->getRepository()->findByIdAndUsernamesAndAccess($id, $usernames, $access);
+
+        foreach ($shares as $share) {
             $this->remove($share);
         }
 
         $this->getManager()->flush();
+    }
+
+    protected function getClassName(): string
+    {
+        return Share::class;
     }
 }

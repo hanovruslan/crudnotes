@@ -1,0 +1,50 @@
+notes_list:
+    controller: 'app.controller.notes::list'
+    path: /notes
+    format: json
+    methods: GET
+notes_available:
+    controller: 'app.controller.notes::available'
+    path: /notes/available
+    format: json
+    methods: GET
+notes_create:
+    controller: 'app.controller.notes::create'
+    path: /notes
+    format: json
+    methods: POST
+notes_read:
+    controller: 'app.controller.notes::read'
+    path: /notes/{id}
+    format: json
+    methods: GET
+    requirements:
+        'id': '\d+'
+notes_update:
+    controller: 'app.controller.notes::update'
+    path: /notes/{id}
+    format: json
+    methods: PUT
+    requirements:
+        'id': '\d+'
+notes_delete:
+    controller: 'app.controller.notes::delete'
+    path: /notes/{id}
+    format: json
+    methods: DELETE
+    requirements:
+        'id': '\d+'
+notes_share:
+    controller: 'app.controller.notes::share'
+    path: /notes/{id}/share
+    format: json
+    methods: PUT
+    requirements:
+        'id': '\d+'
+notes_deshare:
+    controller: 'app.controller.notes::deshare'
+    path: /notes/{id}/share
+    format: json
+    methods: DELETE
+    requirements:
+        'id': '\d+'

@@ -5,7 +5,7 @@ namespace App\Entity;
 use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * @ORM\Entity(repositoryClass="\App\Repository\SharesRepository")
@@ -18,39 +18,39 @@ class Share
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    protected $id;
+    protected ?int $id = null;
 
     /**
      * @var DateTimeImmutable|null
      * @ORM\Column(type="datetime_immutable")
      */
-    protected $createdAt;
+    protected ?DateTimeImmutable $createdAt = null;
 
     /**
      * @var DateTime|null
      * @ORM\Column(type="datetime")
      */
-    protected $updatedAt;
+    protected ?DateTime $updatedAt = null;
 
     /**
      * @var string|null
      * @ORM\Column(type="string", length=64)
      */
-    protected $access = 'read';
+    protected ?string $access = 'read';
 
     /**
      * @var Note|null
      * @ORM\ManyToOne(targetEntity="App\Entity\Note", inversedBy="shares")
-     * @Ignore
+     * @MaxDepth(value=1)
      */
-    protected $note;
+    protected ?Note $note = null;
 
     /**
      * @var User|null
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="shares")
-     * @Ignore
+     * @MaxDepth(value=1)
      */
-    protected $user;
+    protected ?User $user = null;
 
     /**
      * @return User|null

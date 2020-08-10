@@ -1,11 +1,57 @@
 services:
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
-    App\:
-        resource: '../src/*'
-        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
-
-    App\Controller\:
-        resource: '../src/Controller'
-        tags: ['controller.service_arguments']
+        autowire: false
+        autoconfigure: false
+    app.repository.notes:
+        class: App\Repository\NotesRepository
+        factory:
+            - '@doctrine'
+            - 'getRepository'
+        arguments:
+            - 'App\Entity\Note'
+    app.repository.users:
+        class: App\Repository\UsersRepository
+        factory:
+            - '@doctrine'
+            - 'getRepository'
+        arguments:
+            - 'App\Entity\User'
+    app.repository.shares:
+        class: App\Repository\SharesRepository
+        factory:
+            - '@doctrine'
+            - 'getRepository'
+        arguments:
+            - 'App\Entity\Share'
+    app.service.notes:
+        class: App\Service\NotesService
+        arguments:
+            - '@doctrine'
+    app.service.users:
+        class: App\Service\UsersService
+        arguments:
+            - '@doctrine'
+    app.service.shares:
+        class: App\Service\SharesService
+        arguments:
+            - '@doctrine'
+            - '@app.repository.notes'
+            - '@app.repository.users'
+    app.controller.users:
+        class: App\Controller\UsersController
+        calls:
+            - ['setContainer', ['@service_container']]
+            - ['setUsersService', ['@app.service.users']]
+        tags:
+            - 'controller.service_arguments'
+            - 'controller.service_subscriber'
+    app.controller.notes:
+        class: App\Controller\NotesController
+        calls:
+            - ['setContainer', ['@service_container']]
+            - ['setUsersService', ['@app.service.users']]
+            - ['setNotesService', ['@app.service.notes']]
+            - ['setSharesService', ['@app.service.shares']]
+        tags:
+            - 'controller.service_arguments'
+            - 'controller.service_subscriber'

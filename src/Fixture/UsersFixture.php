@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Fixtures;
+namespace App\Fixture;
 
 use App\Entity\User;
 use DateTime;
@@ -10,7 +10,7 @@ use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 
-class UsersFixtures extends Fixture implements OrderedFixtureInterface
+class UsersFixture extends Fixture implements OrderedFixtureInterface
 {
     public function getOrder()
     {

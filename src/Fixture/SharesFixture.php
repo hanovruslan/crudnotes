@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Fixtures;
+namespace App\Fixture;
 
 use App\Entity\Note;
 use App\Entity\Share;
@@ -12,7 +12,7 @@ use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Exception;
 
-class SharesFixtures extends Fixture implements OrderedFixtureInterface
+class SharesFixture extends Fixture implements OrderedFixtureInterface
 {
     public function getOrder()
     {

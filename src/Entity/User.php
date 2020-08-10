@@ -6,7 +6,7 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 /**
  * @ORM\Entity(repositoryClass="\App\Repository\UsersRepository")
@@ -19,42 +19,42 @@ class User
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    protected $id;
+    protected ?int $id;
     /**
      * @var string|null
      * @ORM\Column(type="string", length=255, unique=true, nullable=false)
      */
-    protected $username;
+    protected ?string $username;
 
     /**
      * @var DateTimeImmutable|null
      * @ORM\Column(type="datetime_immutable")
      */
-    protected $createdAt;
+    protected ?DateTimeImmutable $createdAt;
 
     /**
      * @var DateTime|null
      * @ORM\Column(type="datetime")
      */
-    protected $updatedAt;
+    protected ?DateTime $updatedAt;
 
     /**
      * @var string|null
      * @ORM\Column(type="string", length=255, unique=false, nullable=true)
      */
-    protected $fullname;
+    protected ?string $fullname;
 
     /**
-     * @var Note[]|array
+     * @var Note[]|ArrayCollection
      * @ORM\OneToMany(targetEntity="App\Entity\Note", mappedBy="user")
-     * @Ignore
+     * @MaxDepth(value=1)
      */
-    protected $notes = [];
+    protected $notes;
 
     /**
-     * @var Note[]|ArrayCollection|array
+     * @var Note[]|ArrayCollection
      * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="user")
-     * @Ignore
+     * @MaxDepth(value=1)
      */
     protected $shares;
 
@@ -65,7 +65,7 @@ class User
     }
 
     /**
-     * @return ArrayCollection|Share[]|array
+     * @return Share[]|ArrayCollection
      */
     public function getShares()
     {
@@ -73,7 +73,7 @@ class User
     }
 
     /**
-     * @param Share[]|array $shares
+     * @param Share[]|ArrayCollection $shares
      * @return static
      */
     public function setShares($shares)
@@ -112,7 +112,7 @@ class User
     }
 
     /**
-     * @return ArrayCollection|Note[]|array
+     * @return Note[]|ArrayCollection
      */
     public function getNotes()
     {
@@ -120,7 +120,7 @@ class User
     }
 
     /**
-     * @param Note[]|array $notes
+     * @param Note[]|ArrayCollection $notes
      * @return static
      */
     public function setNotes($notes)
@@ -175,7 +175,7 @@ class User
         return $this;
     }
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }

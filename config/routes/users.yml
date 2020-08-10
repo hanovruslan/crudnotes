@@ -1,0 +1,31 @@
+users_list:
+    controller: 'app.controller.users::list'
+    path: /users
+    format: json
+    methods: GET
+users_create:
+    controller: 'app.controller.users::create'
+    path: /users
+    format: json
+    methods: POST
+users_read:
+    controller: 'app.controller.users::read'
+    path: /users/{id}
+    format: json
+    methods: GET
+    requirements:
+        'id': '\d+'
+users_update:
+    controller: 'app.controller.users::update'
+    path: /users/{id}
+    format: json
+    methods: PUT
+    requirements:
+        'id': '\d+'
+users_delete:
+    controller: 'app.controller.users::delete'
+    path: /users/{id}
+    format: json
+    methods: DELETE
+    requirements:
+        'id': '\d+'

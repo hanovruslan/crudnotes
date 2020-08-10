@@ -18,40 +18,40 @@ class Note
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    protected $id;
+    protected ?int $id;
     /**
      * @var string|null
      * @ORM\Column(type="string", length=64, unique=false, nullable=false)
      */
-    protected $title;
+    protected ?string $title;
 
     /**
      * @var DateTimeImmutable|null
      * @ORM\Column(type="datetime_immutable")
      */
-    protected $createdAt;
+    protected ?DateTimeImmutable $createdAt;
 
     /**
      * @var DateTime|null
      * @ORM\Column(type="datetime")
      */
-    protected $updatedAt;
+    protected ?DateTime $updatedAt;
 
     /**
      * @var string|null
      * @ORM\Column(type="text", unique=false, nullable=true)
      */
-    protected $body;
+    protected ?string $body;
 
     /**
      * @var User|null
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="notes")
      * @Ignore
      */
-    protected $user;
+    protected ?User $user;
 
     /**
-     * @var Note[]|ArrayCollection|array
+     * @var Note[]|ArrayCollection
      * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="note")
      * @Ignore
      */
@@ -63,7 +63,7 @@ class Note
     }
 
     /**
-     * @return ArrayCollection|Share[]|array
+     * @return Share[]|ArrayCollection
      */
     public function getShares()
     {
@@ -71,7 +71,7 @@ class Note
     }
 
     /**
-     * @param Share[]|array $shares
+     * @param Share[]|ArrayCollection $shares
      * @return static
      */
     public function setShares($shares)
@@ -128,7 +128,7 @@ class Note
         return $this;
     }
 
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
