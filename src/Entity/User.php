@@ -6,7 +6,7 @@ use DateTime;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 /**
  * @ORM\Entity(repositoryClass="\App\Repository\UsersRepository")
@@ -47,14 +47,14 @@ class User
     /**
      * @var Note[]|ArrayCollection
      * @ORM\OneToMany(targetEntity="App\Entity\Note", mappedBy="user")
-     * @MaxDepth(value=1)
+     * @Ignore
      */
     protected $notes;
 
     /**
      * @var Note[]|ArrayCollection
      * @ORM\OneToMany(targetEntity="App\Entity\Share", mappedBy="user")
-     * @MaxDepth(value=1)
+     * @Ignore
      */
     protected $shares;
 
