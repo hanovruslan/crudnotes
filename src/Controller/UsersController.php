@@ -8,13 +8,11 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
 use Throwable;
 
 class UsersController extends AbstractController
 {
     /**
-     * @Route("/users", methods={"GET"})
      * @return JsonResponse
      */
     public function list(): JsonResponse
@@ -25,7 +23,6 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @Route("/users", methods={"POST"})
      * @param Request $request
      * @return RedirectResponse
      * @throws BadRequestHttpException
@@ -38,7 +35,7 @@ class UsersController extends AbstractController
                 $data['username'] ?? null,
                 $data['fullname'] ?? null
             );
-            return $this->redirectToRoute('user_read', [
+            return $this->redirectToRoute('users_read', [
                 'id' => $user->getId(),
             ]);
         } catch (Throwable $exception) {
@@ -47,7 +44,6 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @Route("/users/{id}", methods={"GET"}, name="user_read", requirements={"id"="\d+"})
      * @param int $id
      * @return JsonResponse
      * @throws NotFoundHttpException
@@ -65,7 +61,6 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @Route("/users/{id}", methods={"PUT"})
      * @param int $id
      * @param Request $request
      * @return RedirectResponse
@@ -76,7 +71,7 @@ class UsersController extends AbstractController
             $data = $this->getData($request);
             $this->getUsersService()->update($id, $data['fullname'] ?? null);
 
-            return $this->redirectToRoute('user_read', [
+            return $this->redirectToRoute('users_read', [
                 'id' => $id,
             ]);
         } catch (Throwable $exception) {
@@ -85,7 +80,6 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @Route("/users/{id}", methods={"DELETE"})
      * @param int $id
      * @return JsonResponse
      */

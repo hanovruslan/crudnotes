@@ -76,7 +76,7 @@ class NotesController extends AbstractController
                 $data['body'] ?? null,
                 $iAm
             );
-            return $this->redirectToRoute('note_read', [
+            return $this->redirectToRoute('notes_read', [
                 'id' => $note->getId(),
             ]);
         } catch (Throwable $exception) {
@@ -129,7 +129,7 @@ class NotesController extends AbstractController
                 $data['body'] ?? null
             );
 
-            return $this->redirectToRoute('note_read', [
+            return $this->redirectToRoute('notes_read', [
                 'id' => $id,
             ]);
         } catch (Throwable $exception) {
