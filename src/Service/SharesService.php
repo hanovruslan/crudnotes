@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Entity\Note;
 use App\Entity\Share;
 use App\Entity\User;
 use App\Repository\NotesRepository;
