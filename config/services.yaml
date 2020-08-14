@@ -2,6 +2,18 @@ services:
     _defaults:
         autowire: false
         autoconfigure: false
+    app.fixture.users:
+        class: App\Fixture\UsersFixture
+        tags:
+            - doctrine.fixture.orm
+    app.fixture.notes:
+        class: App\Fixture\NotesFixture
+        tags:
+            - doctrine.fixture.orm
+    app.fixture.shares:
+        class: App\Fixture\SharesFixture
+        tags:
+            - doctrine.fixture.orm
     app.repository.notes:
         class: App\Repository\NotesRepository
         factory:
