@@ -1,13 +1,3 @@
-notes_list:
-    controller: 'app.controller.notes::list'
-    path: /notes
-    format: json
-    methods: GET
-notes_available:
-    controller: 'app.controller.notes::available'
-    path: /notes/available
-    format: json
-    methods: GET
 notes_create:
     controller: 'app.controller.notes::create'
     path: /notes
@@ -34,6 +24,16 @@ notes_delete:
     methods: DELETE
     requirements:
         'id': '\d+'
+notes_list:
+    controller: 'app.controller.notes::list'
+    path: /notes
+    format: json
+    methods: GET
+notes_available:
+    controller: 'app.controller.notes::available'
+    path: /notes/available
+    format: json
+    methods: GET
 notes_share:
     controller: 'app.controller.notes::share'
     path: /notes/{id}/share

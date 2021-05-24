@@ -51,8 +51,10 @@ class SharesService extends AbstractService
      * @param string $access
      */
     public function share(int $id, array $usernames, string $access = 'read') : void {
-        $notes = $this->notesRepository->findByIdAndUsernamesAndWithoutAccess($id, $usernames, $access);
-        $users = $this->usersRepository->findBy(['username' => $usernames]);
+        $notes = $this->notesRepository
+            ->findByIdAndUsernamesAndWithoutAccess($id, $usernames, $access);
+        $users = $this->usersRepository
+            ->findBy(['username' => $usernames]);
         foreach ($notes as $note) {
             foreach ($users as $user) {
                 $share = (new Share)
@@ -69,7 +71,8 @@ class SharesService extends AbstractService
     }
 
     public function deshare(int $id, array $usernames, string $access) : void {
-        $shares = $this->getRepository()->findByIdAndUsernamesAndAccess($id, $usernames, $access);
+        $shares = $this->getRepository()
+            ->findByIdAndUsernamesAndAccess($id, $usernames, $access);
 
         foreach ($shares as $share) {
             $this->remove($share);

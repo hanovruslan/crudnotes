@@ -27,42 +27,6 @@ class NotesController extends AbstractController
 
     /**
      * @param Request $request
-     * @return JsonResponse
-     */
-    public function list(
-        Request $request
-    ) : JsonResponse
-    {
-        try {
-            $data = $this->getData($request);
-            return $this->json(
-                $this->getNotesService()->findByUsername($data['i_am'] ?? null)
-            );
-        } catch (Throwable $exception) {
-            throw new BadRequestHttpException($exception->getMessage());
-        }
-    }
-
-    /**
-     * @param Request $request
-     * @return JsonResponse
-     */
-    public function available(
-        Request $request
-    ) : JsonResponse {
-        try {
-            $data = $this->getData($request);
-
-            return $this->json(
-                $this->getNotesService()->findAvailableBy($data['i_am'] ?? null, $data['access'] ?? 'read')
-            );
-        } catch (Throwable $exception) {
-            throw new BadRequestHttpException($exception->getMessage());
-        }
-    }
-
-    /**
-     * @param Request $request
      * @return RedirectResponse
      */
     public function create(
@@ -161,7 +125,41 @@ class NotesController extends AbstractController
 
         return $result;
     }
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function list(
+        Request $request
+    ) : JsonResponse
+    {
+        try {
+            $data = $this->getData($request);
+            return $this->json(
+                $this->getNotesService()->findByUsername($data['i_am'] ?? null)
+            );
+        } catch (Throwable $exception) {
+            throw new BadRequestHttpException($exception->getMessage());
+        }
+    }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function available(
+        Request $request
+    ) : JsonResponse {
+        try {
+            $data = $this->getData($request);
+
+            return $this->json(
+                $this->getNotesService()->findAvailableBy($data['i_am'] ?? null, $data['access'] ?? 'read')
+            );
+        } catch (Throwable $exception) {
+            throw new BadRequestHttpException($exception->getMessage());
+        }
+    }
     /**
      * @param int $id
      * @param Request $request

@@ -9,22 +9,10 @@ use DateTimeImmutable;
 use RuntimeException;
 
 /**
- * @method UsersRepository getRepository()
+ * method UsersRepository getRepository()
  */
 class UsersService extends AbstractService
 {
-    protected function getClassName(): string
-    {
-        return User::class;
-    }
-
-    /**
-     * @return array|User[]
-     */
-    public function list() : array {
-        return $this->getRepository()->findAll();
-    }
-
     /**
      * @param string|null $username
      * @param string|null $fullname
@@ -56,26 +44,6 @@ class UsersService extends AbstractService
     }
 
     /**
-     * @param string|null $username
-     * @return User|object|null
-     */
-    public function findOneByUsername(string $username = null) : ?User {
-        if (null === $username) {
-            throw new RuntimeException('empty username');
-        }
-
-        return $this->getRepository() ->findOneBy(['username' => $username]);
-    }
-
-    /**
-     * @param string[] $usernames
-     * @return User[]
-     */
-    public function filterUsernames(array $usernames = []) : array {
-        return $this->getRepository()->filterByUsernames($usernames);
-    }
-
-    /**
      * @param int $id
      * @param string|null $fullname
      */
@@ -100,5 +68,33 @@ class UsersService extends AbstractService
         if ($user instanceof User) {
             $this->remove($user);
         }
+    }
+    /**
+     * @return array|User[]
+     */
+    public function list() : array {
+        return $this->getRepository()->findAll();
+    }
+    /**
+     * @param string|null $username
+     * @return User|object|null
+     */
+    public function findOneByUsername(string $username = null) : ?User {
+        if (null === $username) {
+            throw new RuntimeException('empty username');
+        }
+
+        return $this->getRepository() ->findOneBy(['username' => $username]);
+    }
+    protected function getClassName(): string
+    {
+        return User::class;
+    }
+    /**
+     * @param string[] $usernames
+     * @return User[]
+     */
+    public function filterUsernames(array $usernames = []) : array {
+        return $this->getRepository()->filterByUsernames($usernames);
     }
 }
